@@ -46,5 +46,27 @@
  *   // grandTotal: 1000 + 0 + 50 - 150 = 900
  */
 export function buildZomatoOrder(cart, coupon) {
-  // Your code here
+  if(!Array.isArray(cart) || cart.length === 0) return null
+  
+
+  const items = cart
+                .filter(item => item.qty >= 0)
+                .map(item => {
+                    const addonTotal = (item.addons || []).reduce((total, item) => {
+                    const price = Number(item.split(":")[1]) || 0
+                    return total + price
+                  },0) 
+                  const itemTotal = (item.price + addonTotal) * item.qty
+                  return {
+                    name: item.name,
+                    qty: item.qty,
+                    basePrice: item.price,
+                    addonTotal,
+                    itemTotal
+                  }
+                })
+  const subtotal = items.reduce((sum, item) => (sum + item.itemTotal),0)
+  
+  
+  return {items, subtotal}
 }
