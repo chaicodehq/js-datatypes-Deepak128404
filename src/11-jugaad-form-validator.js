@@ -62,5 +62,26 @@
  *   // => { isValid: false, errors: { name: "...", email: "...", ... } }
  */
 export function validateForm(formData) {
-  // Your code here
+  let errors = {}
+  let isValid = false
+  formData.name = String(formData.name || "").trim()
+  if(formData.name === String() || formData.name.length < 2 || formData.name.length > 50) errors.name = "Name must be 2-50 characters"; 
+  if(typeof formData.email !== 'string' || (formData.email.match(/@/g) || []).length !== 1 || !formData.email.includes("."))  errors.email = "Invalid email format"
+  if(!/^[6789]\d{9}$/.test(formData.phone)) errors.phone = "Invalid Indian phone number"
+  
+  if(!formData.age || isNaN(formData.age))  errors.age = "Age must be an integer between 16 and 100"
+  else if(typeof formData.age === "string" || Number.isInteger(formData.age)) formData.age =  parseInt(formData.age, 10)
+  else  errors.age = "Age must be an integer between 16 and 100"
+  if(formData.age < 16 || formData.age > 100)  errors.age = "Age must be an integer between 16 and 100"
+
+  if(!/^[1-9]\d{5}$/.test(formData.pincode)) errors.pincode = "Invalid Indian pincode" 
+  
+  const state = (formData?.state ?? "") 
+  if(!state) errors.state = "State is required"
+  
+  if(formData.agreeTerms){} 
+  else errors.agreeTerms = "Must agree to terms"
+
+ if(Object.keys(errors).length === 0) isValid = true
+  return { isValid, errors }
 }

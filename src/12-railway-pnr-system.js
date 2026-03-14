@@ -71,5 +71,59 @@
  *   //      passengers: [...], summary: { ..., allConfirmed: true }, chartPrepared: true }
  */
 export function processRailwayPNR(pnrData) {
+  if(typeof pnrData !== "object" || pnrData === null) return null
+  if(typeof pnrData.pnr !== "string" || !/^\d{10}$/.test(pnrData.pnr)) return null
+  if(!pnrData.train) return null
+  if(!Array.isArray(pnrData.passengers) || pnrData.passengers.length === 0) return null
+
+  const processedPassengers = pnrData.passengers.map((pss)=> {
+    let status = String()
+    if(pss.current.startsWith("B") || pss.current.startsWith("S")) status = "CONFIRMED"
+    else if(pss.current.startsWith("WL")) status = "WAITING"
+    else if(pss.current === "CAN") status = "CANCELLED"
+    else if(pss.current.startsWith("RAC")) status = "RAC"
+    const isConfirmed = (status === "CONFIRMED") ? true : false
+   return  {
+    formattedName: pss.name.padEnd(20) + "(" + pss.age + "/" + pss.gender + ")",
+    bookingStatus: pss.booking,
+    currentStatus: pss.current,
+    statusLabel: status,
+    isConfirmed
+    }
+  })
+
+  const totalPassengers = processedPassengers.length;
+  const confirmed = processedPassengers.filter((pss) => (pss.statusLabel === "CONFIRMED")).length
+  const waiting = processedPassengers.filter((pss) => (pss.statusLabel === "WAITING")).length
+  const cancelled = processedPassengers.filter((pss) => (pss.statusLabel === "CANCELLED")).length
+  const rac = processedPassengers.filter((pss) => (pss.statusLabel === "RAC")).length
+  const allConfirmed = processedPassengers.every((pss) => (pss.statusLabel === "CONFIRMED"))
+  const anyWaiting = processedPassengers.some((pss) => (pss.statusLabel === "WAITING") )
+
+  const summary = {
+    totalPassengers,
+    confirmed,
+    waiting,
+    cancelled,
+    rac,
+    allConfirmed,
+    anyWaiting
+  }
+
+  const chartPrepared = processedPassengers
+                        .filter((pss) => (pss.statusLabel !== "CANCELLED"))
+                        .every((pss) => (pss.statusLabel === "CONFIRMED"))
+
+  const parts = [
+        pnrData.pnr.slice(0, 3),
+        pnrData.pnr.slice(3, 6),
+        pnrData.pnr.slice(6)
+    ];
+
+  const pnrFormatted = parts.join("-")
   
+  const trainInfo = `Train: ${pnrData.train.number} - ${pnrData.train.name} | ${pnrData.train.from} → ${pnrData.train.to} | Class: ${pnrData.classBooked}`
+
+return {pnrFormatted, trainInfo, passengers: processedPassengers, summary, chartPrepared }
+
 }

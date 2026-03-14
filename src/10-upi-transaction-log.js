@@ -47,5 +47,37 @@
  *   //      frequentContact: "Swiggy", allAbove100: false, hasLargeTransaction: true }
  */
 export function analyzeUPITransactions(transactions) {
-  // Your code here
+    if(!Array.isArray(transactions) || transactions.length === 0) return null
+
+    const filteredTransactions = transactions.filter(transaction => (transaction.amount > 0 && (transaction.type === "credit" || transaction.type === "debit")))
+    const totalCredit = filteredTransactions.reduce((total, transaction) => {
+        if(transaction.type === "credit") total = total + transaction.amount
+        return total
+    },0)
+
+    if (filteredTransactions.length === 0) return null
+    const totalDebit = filteredTransactions.reduce((total, transaction) => {
+        if(transaction.type === "debit") total = total + transaction.amount
+        return total
+    },0)
+
+    const netBalance = totalCredit - totalDebit
+    const transactionCount = filteredTransactions.length
+    const avgTransaction = Math.round((totalCredit + totalDebit) / transactionCount)
+    const highestTransactionAmount = Math.max(...filteredTransactions.map(transt => transt.amount))
+    const highestTransaction = filteredTransactions.find(transt => transt.amount === highestTransactionAmount)
+    const categoryBreakdown = filteredTransactions.reduce((cat,trans) => {
+        cat[trans.category] = (cat[trans.category] || 0) + trans.amount
+        return cat
+    }, {})
+
+    const frequentObject = filteredTransactions.reduce((cat,trnst) => {
+        cat[trnst.to] = (cat[trnst.to] || 0) + 1
+        return cat
+    },{})
+    
+    const frequentContact = Object.entries(frequentObject).sort((a,b) => b[1] - a[1])[0][0]
+    const allAbove100 = filteredTransactions.every(trans => trans.amount > 100)
+    const hasLargeTransaction = filteredTransactions.some(trans => trans.amount >= 5000 ) 
+    return {totalCredit, totalDebit, netBalance, transactionCount, avgTransaction, highestTransaction, categoryBreakdown, frequentContact, allAbove100, hasLargeTransaction}
 }

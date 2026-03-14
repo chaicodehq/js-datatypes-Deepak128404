@@ -53,7 +53,8 @@ export function buildZomatoOrder(cart, coupon) {
   const items = cart
                 .filter(item => item.qty > 0)
                 .map(item => {
-                    const addonTotal = (item.addons || []).reduce((total, item) => {
+                    const addonTotal = (item.addons || [])
+                .reduce((total, item) => {
                     const price = Number(item.split(":")[1]) || 0
                     return total + price
                   },0) 
@@ -74,7 +75,6 @@ export function buildZomatoOrder(cart, coupon) {
   else if(subtotal >= 1000 ) deliveryFee
 
   const gst = parseFloat((subtotal * 0.05).toFixed(2))
-
 
   if(coupon === "first50") discount = (Math.min(subtotal * 0.5, 150))
   else if(coupon === "flat100") discount =  100
